@@ -9,7 +9,7 @@ from torch.utils.data.dataset import random_split
 
 from model import SR_q_DL
 from utils import init_device_seed, load_args
-from dataset import Dataset
+from dataset import TrainDataset
 
 BATCH_SIZE = 128
 
@@ -17,7 +17,7 @@ def train():
     args = load_args()
     device = init_device_seed(1234, args.cuda_visible)
 
-    dataset = Dataset()
+    dataset = TrainDataset()
     len_dataset = dataset.__len__()
     len_train_val = [int(len_dataset * 0.9), len_dataset - int(len_dataset * 0.9)]
 
@@ -37,7 +37,7 @@ def train():
     optimizer = optim.Adam(model.parameters(), lr=1e-4, betas=(0.5, 0.999))
     criterion_mse = nn.MSELoss()
 
-    while epoch < 10:
+    while epoch < 20:
         timer = time.time()
         epoch += 1
 
@@ -61,7 +61,7 @@ def train():
 
             # Loss display
             train_loss += loss.item()
-            print(f'\rEpoch {epoch} {idx}/{len(train_loader)} Train loss: {np.around(train_loss*100 / (idx + 1), 4)}\t', end='')
+            print(f'\rEpoch {epoch} {idx}/{len(train_loader)} Train loss: {np.around(train_loss / (idx + 1), 4)}\t', end='')
 
         # validation
         model.eval()
@@ -75,7 +75,7 @@ def train():
             loss = criterion_mse(hr_e, hr)
             val_loss += loss.item()
 
-        print(f'{np.around(val_loss*100 / (idx + 1), 4)}, Time: {time.time() - timer}s')
+        print(f'{np.around(val_loss / (idx + 1), 4)}, Time: {time.time() - timer}s')
 
         # Save checkpoint per epoch
         torch.save({
