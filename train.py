@@ -11,8 +11,6 @@ from model import SR_q_DL
 from utils import init_device_seed, load_args
 from dataset import TrainDataset
 
-BATCH_SIZE = 128
-
 def train():
     args = load_args()
     device = init_device_seed(1234, args.cuda_visible)
@@ -22,8 +20,8 @@ def train():
     len_train_val = [int(len_dataset * 0.9), len_dataset - int(len_dataset * 0.9)]
 
     train_dataset, val_dataset = random_split(dataset, len_train_val)
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size)
 
     os.makedirs('./model', exist_ok=True)
     model = SR_q_DL(36, 270).to(device)
@@ -54,6 +52,7 @@ def train():
             optimizer.zero_grad()
             hr_e = model(lr)
             loss = criterion_mse(hr_e, hr)
+            # print(hr_e[0, 0].ravel())
 
             loss.backward()
             optimizer.step()

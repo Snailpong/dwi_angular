@@ -16,7 +16,7 @@ class ESPCN(nn.Module):
     def forward(self, x):
         x = self.layers(x)
         batchs, channels, h, w, d = x.size()
-        x = x.reshape((batchs, channels_out, h * 2, w * 2, d * 2))
+        x = x.reshape((batchs, channels, h * 2, w * 2, d * 2))
         return x
 
 

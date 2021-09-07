@@ -7,10 +7,10 @@ import numpy as np
 
 class TrainDataset(DataLoader):
     def __init__(self):
-        hf = h5py.File('./data/train.h5', 'r')
-        self.hr = hf['hr']
-        self.lr = hf['lr']
-        self.mask = hf['mask']
+        hf = h5py.File("./data/train.h5", "r")
+        self.hr = hf["hr"]
+        self.lr = hf["lr"]
+        self.mask = hf["mask"]
 
     def __getitem__(self, index):
         idx, x, y, z = self.mask[index]
@@ -29,10 +29,10 @@ class TestDataset(DataLoader):
         self.mask = mask
 
     def __getitem__(self, index):
-        x, y, z = self.mask
+        x, y, z = self.mask[index]
         patch_lr = torch.from_numpy(self.lr[x-2:x+3, y-2:y+3, z-2:z+3])
 
-        return patch_lr.permute(3, 0, 1, 2)
+        return patch_lr.permute(3, 0, 1, 2), self.mask[index]
 
     def __len__(self):
         return self.mask.shape[0]

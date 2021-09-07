@@ -20,6 +20,7 @@ def load_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--load_model', type=bool, default=False, help='loading pretrained model')
     parser.add_argument('--cuda_visible', default='0', help='set CUDA_VISIBLE_DEVICES')
+    parser.add_argument('--batch_size', type=int, default=128, help='set batch size')
     args = parser.parse_args()
     return args
 
@@ -27,5 +28,6 @@ def load_args_test():
     parser = argparse.ArgumentParser()
     parser.add_argument('--cuda_visible', default='0', help='set CUDA_VISIBLE_DEVICES')
     parser.add_argument('--image_path', default='./data/val', help='set validation path')
+    parser.add_argument('--batch_size', type=int, default=128, help='set batch size')
     args = parser.parse_args()
     return args

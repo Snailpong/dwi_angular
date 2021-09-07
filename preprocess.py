@@ -4,7 +4,6 @@ import nibabel as nib
 import h5py
 import pickle
 import itertools
-import matplotlib.pyplot as plt
 
 def get_vals_vecs():
     subject = os.listdir("./data/train")[0]
@@ -38,8 +37,6 @@ def make_train_dataset():
     train_lrs = np.zeros((5, 72+4, 87+4, 72+4, 36), dtype=np.float32)
     mask_lrs = np.zeros((5, 72+4, 87+4, 72+4), dtype=np.uint8)
 
-    hf = h5py.File("./data/train.h5", "w")
-
     vals, vecs, dif_indexes_0, dif_indexes_hr, dif_indexes_lr = get_vals_vecs()
 
     for idx, subject in enumerate(train_list):
@@ -61,10 +58,11 @@ def make_train_dataset():
         train_hrs[idx] = dwi[..., dif_indexes_hr]
         train_lrs[idx], mask_lrs[idx] = make_lr(dwi, mask, dif_indexes_lr)
 
-    mask_index = np.array(np.where(mask_lr == 1)).T
+    mask_index = np.array(np.where(mask_lrs == 1)).T
 
-    hf.create_dataset("hr", data=train_hr)
-    hf.create_dataset("lr", data=train_lr)
+    hf = h5py.File("./data/train.h5", "w")
+    hf.create_dataset("hr", data=train_hrs)
+    hf.create_dataset("lr", data=train_lrs)
     hf.create_dataset("mask", data=mask_index)
     hf.close()
 
@@ -73,14 +71,12 @@ def make_test_dataset():
     vals, vecs, dif_indexes_0, dif_indexes_hr, dif_indexes_lr = get_vals_vecs()
 
     for idx, subject in enumerate(test_list):
-        os.makedirs(f"./data/test_h5/{subject}")
         dwi = nib.load(f"./data/test/{subject}/data.nii.gz")
         dwi_header = dwi.header.copy()
         dwi = np.array(dwi.get_fdata(), dtype=np.float32)[:-1, :, :-1]
         mask = nib.load(f"./data/test/{subject}/nodif_brain_mask.nii.gz")
         mask = np.array(mask.get_fdata(), dtype=np.uint8)[:-1, :, :-1]
 
-        lr = np.zeros((72+4, 87+4, 72+4, 36), dtype=np.float32)
         dwi = np.pad(dwi, ((4, 4), (4, 4), (4, 4), (0, 0)), "constant", constant_values=0)
         mask = np.pad(mask, ((4, 4), (4, 4), (4, 4)), "constant", constant_values=0)
 
@@ -94,9 +90,11 @@ def make_test_dataset():
 
         test_lr, mask_lr = make_lr(dwi, mask, dif_indexes_lr)
         mask_index = np.array(np.where(mask_lr == 1)).T
+        print(np.where(mask_lr == 1))
 
+        os.makedirs(f"./data/test_h5/{subject}", exist_ok=True)
         hf = h5py.File(f"./data/test_h5/{subject}/data.h5", "w")
-        hf.create_dataset("lr", data=lr)
+        hf.create_dataset("lr", data=test_lr)
         hf.create_dataset("mask_index", data=mask_index)
         hf.create_dataset("mask_hr", data=mask)
         hf.close()
@@ -106,5 +104,5 @@ def make_test_dataset():
         break
 
 if __name__ == "__main__":
-    # make_train_dataset()
+    make_train_dataset()
     make_test_dataset()
