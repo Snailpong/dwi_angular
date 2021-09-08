@@ -95,6 +95,7 @@ def make_test_dataset():
         os.makedirs(f"./data/test_h5/{subject}", exist_ok=True)
         hf = h5py.File(f"./data/test_h5/{subject}/data.h5", "w")
         hf.create_dataset("lr", data=test_lr)
+        hf.create_dataset("hr_b0", data=dwi_b0s)
         hf.create_dataset("mask_index", data=mask_index)
         hf.create_dataset("mask_hr", data=mask)
         hf.close()
