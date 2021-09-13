@@ -49,9 +49,9 @@ if __name__ == '__main__':
         for dif in range(270):
             hr_e_vol[dif] *= dwi_b0
 
-        hr_vol = np.empty((288, 144+8+1, 174+8, 144+8+1), dtype=np.float32)
-        hr_vol[dif_indexes_hr, :-1, :, :-1] = hr_e_vol[:270]
-        hr_vol[dif_indexes_0, :-1, :, :-1] = np.transpose(hr_b0s, (3, 0, 1, 2))
+        hr_vol = np.empty((288, 145, 174, 145), dtype=np.float32)
+        hr_vol[dif_indexes_hr, :-1, :, :-1] = hr_e_vol[:270, 4:-4, 4:-4, 4:-4]
+        hr_vol[dif_indexes_0, :-1, :, :-1] = np.transpose(hr_b0s[4:-4, 4:-4, 4:-4], (3, 0, 1, 2))
         hr_vol = np.transpose(hr_vol, (1, 2, 3, 0))
 
         with open(f"./data/test_h5/{subject}/header", "rb") as f:
