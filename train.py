@@ -24,7 +24,7 @@ def train():
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size)
 
     os.makedirs('./model', exist_ok=True)
-    model = SR_q_DL(36, 270).to(device)
+    model = SR_q_DL(36, 288).to(device)
     epoch = 0
 
     if args.load_model:
@@ -52,7 +52,6 @@ def train():
             optimizer.zero_grad()
             hr_e = model(lr)
             loss = criterion_mse(hr_e, hr)
-            # print(hr_e[0, 0].ravel())
 
             loss.backward()
             optimizer.step()

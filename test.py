@@ -16,11 +16,11 @@ from preprocess import get_vals_vecs
 if __name__ == '__main__':
     args = load_args_test()
     device = init_device_seed(1234, args.cuda_visible)
-    vals, vecs, dif_indexes_0, dif_indexes_hr, dif_indexes_lr = get_vals_vecs()
+    vals, vecs, dif_indexes_0, dif_indexes_lr = get_vals_vecs()
     output_dir = "./result/" + datetime.now().strftime("%Y-%m-%d %H_%M_%S")
 
     test_list = os.listdir("./data/test_h5")
-    model = SR_q_DL(36, 270).to(device)
+    model = SR_q_DL(36, 288).to(device)
     checkpoint = torch.load('./model/model_dict', map_location=device)
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         hf = h5py.File(f"./data/test_h5/{subject}/data.h5", "r")
         lr_vol = hf["lr"]
         mask_index = hf["mask_index"]
-        hr_e_vol = np.zeros((270, 144+8, 174+8, 144+8), dtype=np.float32)
+        hr_e_vol = np.zeros((288, 144+8, 174+8, 144+8), dtype=np.float32)
 
         dataset = TestDataset(lr_vol, mask_index)
         test_loader = DataLoader(dataset, batch_size=args.batch_size)
@@ -43,15 +43,13 @@ if __name__ == '__main__':
                 hr_e_vol[:, x*2:x*2+2, y*2:y*2+2, z*2:z*2+2] = hr_e[batch_idx]
             print(f'\r{idx}/{len(test_loader)}', end='')
 
-        hr_b0s = hf["hr_b0"]
-        dwi_b0 = np.mean(hr_b0s, axis=3)
+        dwi_b0 = hf["hr_b0"]
         np.clip(hr_e_vol, 0, 1, out=hr_e_vol)
-        for dif in range(270):
+        for dif in range(288):
             hr_e_vol[dif] *= dwi_b0
 
         hr_vol = np.empty((288, 145, 174, 145), dtype=np.float32)
-        hr_vol[dif_indexes_hr, :-1, :, :-1] = hr_e_vol[:270, 4:-4, 4:-4, 4:-4]
-        hr_vol[dif_indexes_0, :-1, :, :-1] = np.transpose(hr_b0s[4:-4, 4:-4, 4:-4], (3, 0, 1, 2))
+        hr_vol[:, :-1, :, :-1] = hr_e_vol[:, 4:-4, 4:-4, 4:-4]
         hr_vol = np.transpose(hr_vol, (1, 2, 3, 0))
 
         with open(f"./data/test_h5/{subject}/header", "rb") as f:
